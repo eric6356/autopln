@@ -1,0 +1,54 @@
+one_lpd_ip_v03_test()
+{
+
+    TEST_NO(1);
+    JUDGE_PAT(adj_lvr2v3_start,__adj_lvr2v3_start);
+    JUDGE_PAT(adj_lvr2v3__2,__adj_lvr2v3__2);
+
+    TEST_NO(2);
+    strcpy(verify_mass, "mass");
+    strcpy(show_flag,"no");
+    strcpy(which_one,"first");
+    pat_interval=218;
+    lpd_option_no=16;
+    //one_lpd_set_1st();
+    FORCE_V_DPS(VDD+VBAT,2.335V,@8V,@100mA,100mA,NORM,ON,1mS);
+    LEVELS(fun_2v335_lvl,0mS);
+
+    one_lpd_adjust_ip_v03();
+
+    SOCKET_INC(FRZ_OFF)
+    {
+        // lvr_2v3_option[SOCKET]=one_lpd_fir_option[SOCKET];
+        // printf("SOCKET[%2d]=%4d\n",SOCKET, lvr_2v3_option [SOCKET]);
+    }
+
+    // write_Register
+    /*
+    SOCKET_INC(FRZ_OFF)
+    {
+        test_lvr_option[SOCKET]=lvr_2v3_option[SOCKET];
+        if((test_lvr_option[SOCKET]>=8)&&(test_lvr_option[SOCKET]<=15))
+        {
+            test_lvr_option[SOCKET]=test_lvr_option[SOCKET]-8;
+        }
+        else if((test_lvr_option[SOCKET]>=0)&&(test_lvr_option[SOCKET]<=7))
+        {
+            test_lvr_option[SOCKET]=test_lvr_option[SOCKET]+8;
+        }
+        else
+        test_lvr_option[SOCKET]=-1;
+    }
+    */
+    SOCKET_INC(FRZ_ON)
+    {
+        // JUDGE_PAT(one_lpd_adj_1st+218*lvr_2v3_option[SOCKET],one_lpd_adj_1st+216+218*lvr_2v3_option[SOCKET]);
+    }
+
+    JUDGE_PAT(adj_lvr2v3_end,__adj_lvr2v3_end);
+
+    POWER_DOWN_FAIL_SITE(MODE_B);
+
+    FORCE_V_DPS(VDD+VBAT,3.3V,@8V,@100mA,100mA,NORM,ON,1mS);
+    LEVELS(fun_3v3_lvl,0mS);
+}

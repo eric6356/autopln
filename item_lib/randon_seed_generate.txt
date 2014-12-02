@@ -1,0 +1,57 @@
+randon_seed_generate()  
+{
+    long ran_data;                  
+    
+    SOCKET_INC(FRZ_OFF)
+    {
+        counter_i++;
+        srand( (unsigned int)time(0) );
+                  
+        ran_data= rand();
+        random_temp.ra_int=(0xff00&ran_data);    
+        Random_h.ra_char=random_temp.ra_int>>8;
+        
+        random_temp.ra_int=0x00ff&ran_data;  
+        Random_l.ra_char=random_temp.ra_int;          
+        
+        ID33.ra_char=counter_i;
+        ID22.ra_char=counter_i>>8;
+        ID11.ra_char=counter_i>>16;
+        
+        if((Random_h.ra_char^ID33.ra_char)>255){index0=(Random_h.ra_char^ID33.ra_char)%255;}
+        else index0=Random_h.ra_char^ID33.ra_char;
+        printf("%4d\t",index0);  
+        rand0[SOCKET]=index0;
+        
+        if( (ID11.ra_char+ ID33.ra_char)>255){ index1=(ID11.ra_char+ ID33.ra_char)%255;}
+        else index1=ID11.ra_char+ ID33.ra_char;
+        
+        if( (Table_id1[index1]+Random_h.ra_char)>255 ){ index1=(Table_id1[index1]+Random_h.ra_char)%255;}
+        else index1=Table_id1[index1]+Random_h.ra_char;
+        printf("%4d\t",index1);
+        rand1[SOCKET]=index1;
+        
+        if( (ID22.ra_char+ ID33.ra_char)>255){ index2=(ID22.ra_char+ ID33.ra_char)%255;}
+        else index2=ID22.ra_char+ ID33.ra_char;
+        
+        if( (Table_id2[index2]+Random_l.ra_char^Random_h.ra_char)>255 ){ index2=(Table_id2[index2]+Random_l.ra_char^Random_h.ra_char)%255;}
+        else index2=Table_id2[index2]+Random_l.ra_char^Random_h.ra_char;
+        printf("%4d\t",index2);                
+        rand2[SOCKET]=index2;
+                        
+        if(ID33.ra_char>255){index3=ID33.ra_char%255;}
+        else index3=ID33.ra_char;
+        
+        if( (Table_id3[index3]+ Random_l.ra_char)>255 ){index3=(Table_id3[index3]+ Random_l.ra_char)%255;}
+        else index3=(Table_id3[index3]+ Random_l.ra_char);
+        printf("%4d\t",index3);
+        rand3[SOCKET]=index3;        
+        printf("\n");
+     }
+     
+     SOCKET_INC(FRZ_OFF)
+     {
+        printf("SOCKET=%d, rand0=%d ,rand1=%d ,rand2=%d ,rand3=%d\n",SOCKET,rand0[SOCKET],rand1[SOCKET],rand2[SOCKET],rand3[SOCKET]); 
+     }
+        
+} 

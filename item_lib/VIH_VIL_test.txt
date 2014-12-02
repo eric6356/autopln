@@ -1,0 +1,75 @@
+VIH_VIL_test()
+{
+    // IO_PINS-JTAG_PINS 
+    // under high    
+    // VIH/VIL_schmit1      
+    // FORCE_V_DPS(all_Powers,high,@8V,@100mA,100mA,NORM,ON,1mS);                
+    LEVELS(VIH_VIL_high_schmit1_normal_lvl,1mS);
+    TEST_NO(1);
+    JUDGE_PAT(dc_port_vihl_pdi,__dc_port_vihl_pdi);
+
+    //VIH/VIL_schmit2        
+    LEVELS(VIH_VIL_high_schmit2_normal_lvl,1mS);
+    TEST_NO(2);
+    JUDGE_PAT(dc_port_vihl_pds,__dc_port_vihl_pds);      
+
+    // under low
+    // VIH/VIL1        
+    // FORCE_V_DPS(all_Powers,low,@8V,@100mA,100mA,NORM,ON,1mS);
+    LEVELS(function_typical_lvl,1mS);
+    LEVELS(VIH_VIL_low_schmit1_normal_lvl,1mS);
+    TEST_NO(3);
+    JUDGE_PAT(dc_port_vihl_pdi,__dc_port_vihl_pdi); 
+
+    // VIH/VIL1  
+    LEVELS(VIH_VIL_low_schmit2_normal_lvl,1mS);
+    TEST_NO(4);
+    JUDGE_PAT(dc_port_vihl_pds,__dc_port_vihl_pds);
+
+    /*==================================switch_to_shadow======================================*/            
+    PIN_MODE(tck+SHADOW_tck,RZ,EDGE,ENABLE,IO_NRZ,OFF);
+    TEST_NO(5);
+    JUDGE_PAT(switch_to_shadow,__switch_to_shadow);  
+    /*=======================================================================================*/ 
+
+    // JTAG_PINS 
+    // under high    
+    // FORCE_V_DPS(all_Powers,high,@8V,@100mA,100mA,NORM,ON,1mS);
+    PIN_MODE(JTAG_PINS,NRZ,EDGE,ENABLE,IO_NRZ,NORM);
+    PIN_MODE(SHADOW_tck,RZ,EDGE,ENABLE,IO_NRZ,OFF);   
+
+    // VIH/VIL_schmit1        
+    LEVELS(VIH_VIL_high_schmit1_jtag_lvl,1mS);
+    TEST_NO(6);
+    JUDGE_PAT(dc_jtag_vihl_pdi,__dc_jtag_vihl_pdi);
+
+    // VIH/VIL_schmit2       
+    LEVELS(VIH_VIL_high_schmit2_jtag_lvl,1mS);
+    TEST_NO(7);
+    JUDGE_PAT(dc_jtag_vihl_pds,__dc_jtag_vihl_pds);      
+
+    // under low    
+    // FORCE_V_DPS(all_Powers,low,@8V,@100mA,100mA,NORM,ON,1mS);  
+    // VIH/VIL_schmit1        
+    LEVELS(VIH_VIL_low_schmit1_jtag_lvl,1mS);
+    TEST_NO(8);
+    JUDGE_PAT(dc_jtag_vihl_pdi,__dc_jtag_vihl_pdi);
+
+    // VIH/VIL_schmit2  
+    LEVELS(VIH_VIL_low_schmit2_jtag_lvl,1mS);
+    TEST_NO(9);
+    JUDGE_PAT(dc_jtag_vihl_pds,__dc_jtag_vihl_pds);      
+
+    /*==================================switch_back_jtag======================================*/            
+    PIN_MODE(tck+SHADOW_tck,RZ,EDGE,ENABLE,IO_NRZ,OFF);
+    TEST_NO(10);
+    JUDGE_PAT(switch_back_jtag,__switch_back_jtag);  
+    
+    /*=======================================================================================*/ 
+    // FORCE_V_DPS(all_Powers,typical,@8V,@100mA,100mA,NORM,ON,1mS);    
+    PIN_MODE(IO_PINS,NRZ,EDGE,ENABLE,IO_NRZ,OFF);
+    PIN_MODE(tck,RZ,EDGE,ENABLE,IO_NRZ,OFF);
+    PIN_MODE(MASK_PINS,NRZ,EDGE,MASK,IO_NRZ,OFF);
+    
+    POWER_DOWN_FAIL_SITE(MODE_B); 
+}    

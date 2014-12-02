@@ -1,0 +1,58 @@
+    //=======================Copy Patterns of code&lotid program Start======================//
+    printf("---IN START_UP use lotid ip---\n");
+    strcpy(startup_generate,"off");
+    strcpy(call_lotid,"off");
+    strcpy(release_generate,"off");
+    strcpy(which_flow,"blank");
+    strcpy(dec_file,"");
+    strcpy(TCK,"tck");
+    strcpy(TDI,"tdi");
+    strcpy(TDO,"tdo");
+    strcpy(TMS,"tms");
+    partnumber[4]=0xFF;
+    partnumber[3]=0xFF;
+    partnumber[2]=0xFF;
+    partnumber[1]=0xFF;
+    partnumber[0]=0xFF;
+    selfcode[0]=0xFF;
+    selfcode[1]=0xFF;
+    selfcode[2]=0xFF;
+    selfcode[3]=0xFF;
+    selfcode[4]=0xFF;
+    selfcode[5]=0xFF;
+    ispcodename[2]=0x00;
+    ispcodename[1]=0x00;
+    ispcodename[0]=0x00;
+    strcpy(testcode,"");
+    flash_type=1;//0=0.18   1=0.153
+
+    if(strcmp(startup_generate,"on")==0)
+    {
+        strncpy(lotnumber,TEST_LOT_ID,5);
+        strncpy(lotid_check_first,lotnumber,5);
+        strncpy(codename,TEST_ROM_CODE,5);
+
+        get_id=flash_lotid_v04();
+
+        system("patcmp .\\..\\pat\\pgmxxxxx.pat -c");
+        system("patcmp .\\..\\pat\\rdxxxxx.pat -c");
+
+        system("patcmp .\\..\\pat\\*.pdz -o .\\..\\pat\\xxx_pat");
+    }
+    else
+    {
+        strcpy(lotnumber,"54321");
+        strncpy(lotid_check_first,lotnumber,5);
+        strcpy(codename,"00000");
+        if(strcmp(call_lotid,"on")==0)
+        {
+            get_id=flash_lotid_v04();
+
+            system("patcmp .\\..\\pat\\pgmxxxxx.pat -c");
+            system("patcmp .\\..\\pat\\rdxxxxx.pat -c");
+
+            system("patcmp .\\..\\pat\\*.pdz -o .\\..\\pat\\xxx_pat");
+        }
+    }
+
+    printf("get_id=%d\n",get_id);

@@ -1,0 +1,84 @@
+
+flash_lotid_check_v04(){
+
+//------flow and partnumber information--------------------------------------------
+    int mold_value[5],left_value[5];
+    int mold_cnt;
+    for(mold_cnt=4;mold_cnt>=0;mold_cnt--)
+    {
+       mold_value[mold_cnt]=partnumber[mold_cnt]/16;
+       left_value[mold_cnt]=partnumber[mold_cnt]%16;
+    }
+
+    printf("This program selects %s flow!\n",which_flow);
+    printf("this device's partnumber is:%X%X%X%X%X%X%X%X%X%X\n",mold_value[4],left_value[4],mold_value[3],left_value[3],mold_value[2],left_value[2],mold_value[1],left_value[1],mold_value[0],left_value[0]);
+
+//------BLANK FLOW is not same with CODE FLOW -------------------------------------
+
+    printf("lotid_check_first=%s\n",lotid_check_first);
+    strcpy(lotid_check_second,TEST_LOT_ID);
+    lotid_check_second[5]='\0';
+    printf("lotid_check_second=%s\n",lotid_check_second);
+
+    if(strcmp(lotid_check_first,lotid_check_second)==0)
+    {
+        printf("ATE LOT ID and Prober LOT ID compare result...OK\n");
+    }
+    else
+    {
+        SOCKET_INC(FRZ_OFF)
+        {
+        PLAN_RESULT_MS[SOCKET]=FAIL;
+        }
+        printf("ATE LOT ID and Prober LOT ID compare result...Fail\n");
+    }
+
+    if(strcmp(which_flow,"blank")==0)
+    {
+       if( (access("..\\PAT\\pgmxxxxx.pat",0)==0)&&(access("..\\PAT\\rdxxxxx.pat",0)==0)&&(strcmp(TEST_ROM_CODE,"")==0) )
+       {
+          printf("Pattern file path check...OK\n");
+       }
+       else
+       {
+           SOCKET_INC(FRZ_OFF)
+           {
+                PLAN_RESULT_MS[SOCKET]=FAIL;
+           }
+           printf("Pattern file path check...Fail\n");
+       }
+    }
+    else if(strcmp(which_flow,"code")==0)
+    {
+//       if( (access("..\\PAT\\pgmxxxxx.pat",0)==0)&&(access("..\\PAT\\rdxxxxx.pat",0)==0)&&(access("..\\PAT\\pgcodename.pat",0)==0)&&(access("..\\PAT\\rdcodename.pat",0)==0)&&(strcmp(TEST_ROM_CODE,"")!=0) )
+       if( (access("..\\PAT\\pgmxxxxx.pat",0)==0)&&(access("..\\PAT\\rdxxxxx.pat",0)==0)&&(strcmp(TEST_ROM_CODE,"")!=0) )//ceci 14.6.16
+
+       {
+          printf("Pattern file path check...OK\n");
+       }
+       else
+       {
+           SOCKET_INC(FRZ_OFF)
+           {
+                PLAN_RESULT_MS[SOCKET]=FAIL;
+           }
+           printf("Pattern file path check...Fail\n");
+       }
+    }
+    else ;
+
+
+    printf("in lot_id_check, get_id=%d\n",get_id);
+    if((get_id==1)&&(strcmp(startup_generate,"on")==0)&&(strcmp(release_generate,"on")==0))
+    {
+        printf("flash chip, LOT ID check...OK\n");
+    }
+    else
+    {
+        SOCKET_INC(FRZ_OFF)
+        {
+            PLAN_RESULT_MS[SOCKET]=FAIL;
+        }
+        printf("LOT ID check...Fail, for get_id must be 1 or now in app-debug environment!  \n ");
+    }
+}

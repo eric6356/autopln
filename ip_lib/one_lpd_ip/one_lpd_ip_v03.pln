@@ -1,0 +1,96 @@
+
+one_lpd_adjust_ip_v03()
+{
+  int cycle_i;
+  int lpdflag;
+  int lpd_flag[32];
+  int start_add,stop_add;
+  int *lpd_var_sub;
+  char make_sure_fail='P';
+
+//------------------------------------------------------------------------------------------------------------------
+  for(cycle_i=0;cycle_i<32;cycle_i++)
+  {
+     one_lpd_fir_option[cycle_i]=-1;
+     lpd_flag[cycle_i]=0;
+  }
+//------------------------------------------------------------------------------------------------------------------
+
+   if(lpd_option_no!=4&&lpd_option_no!=8&&lpd_option_no!=16)
+      make_sure_fail='A';
+
+  if(((strcmp(verify_mass,"verify")==0)||(strcmp(verify_mass,"mass")==0))==0)
+     make_sure_fail='B';
+
+//------------------------------------------------------------------------------------------------------------------
+  if(make_sure_fail=='P')
+  {
+     for(cycle_i=0;cycle_i<lpd_option_no;cycle_i++)
+     {
+         //high-->low
+        start_add=cycle_i*pat_interval; stop_add=start_add+pat_interval-1;
+        JUDGE_PAT(one_lpd_adj_1st+start_add,one_lpd_adj_1st+stop_add);
+        
+        SOCKET_INC(FRZ_OFF)
+        {
+          if((JUDGE_RESULT_MS[SOCKET]==FAIL)&&(lpd_flag[SOCKET]==0))
+           {
+             
+             lpd_flag[SOCKET]=1;
+             one_lpd_fir_option[SOCKET]=cycle_i;
+             lpd_var_sub=&one_lpd_fir_option[SOCKET];
+             one_lpd_fir_option[SOCKET]=one_lpd_real_op_1st(lpd_var_sub);
+            
+            }
+        }
+
+        if(strcmp(verify_mass,"mass")==0)
+        {
+           lpdflag=1;
+           SOCKET_INC(FRZ_OFF)
+           {
+             if(lpd_flag[SOCKET]==0) lpdflag=0;
+           }
+           if(lpdflag==1)  {break;}
+        }
+     }
+//-----------------------------------------------------------------------------------------------------------------
+     SOCKET_INC(FRZ_OFF)
+     {
+        PLAN_RESULT_MS[SOCKET]=PASS;
+     }
+
+     SOCKET_INC(FRZ_OFF)
+     {
+        if(one_lpd_fir_option[SOCKET]==-1)
+        {
+           one_lpd_fir_option[SOCKET]=lpd_option_no-1;
+           lpd_var_sub=&one_lpd_fir_option[SOCKET];
+           one_lpd_fir_option[SOCKET]=one_lpd_real_op_1st(lpd_var_sub);
+           if( (one_lpd_fir_option[SOCKET]<0)||(one_lpd_fir_option[SOCKET]>=lpd_option_no) )
+              PLAN_RESULT_MS[SOCKET]=FAIL;
+        }
+        if(strcmp(show_flag,"yes")==0)
+        {
+           printf("one_lpd_fir_option[s%d]=%d\n",SOCKET,one_lpd_fir_option[SOCKET]);
+        }
+     }
+//------------------------------------------------------------------------------------------------------------------
+  }
+  else
+  {
+     switch(make_sure_fail)
+     {
+        case 'A' : printf("===error! int-var lpd_option_no should be 4/8/16!===\n");break;
+        case 'B' : printf("===error! string-var verify_mass should be verify/mass !===\n");break;
+        default  : break;
+     }
+     SOCKET_INC(FRZ_OFF)
+     {
+          PLAN_RESULT_MS[SOCKET]=FAIL;
+     }
+  }
+
+}
+
+//=====================LPD IP END=====================================================================================

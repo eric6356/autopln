@@ -1,0 +1,59 @@
+one_chopldo_adj_ip_v00_test()
+{
+    TEST_NO(1);
+
+    strcpy(pdcl_rl_switch, "on");
+    strcpy(verify_mass, "mass");
+    strcpy(show_flag, "no");
+    strcpy(which_one, "first");
+    pat_interval = 324;
+    pre_wait_time = 0mS;
+    wait_time = 0mS;
+    accurate_set = 0.05;
+    ldo_target = 1.2;
+    ldo_option_no = 16;
+    pre_load_current = 0.0A;
+    load_current = 0.0A;
+
+    //one_chopldo_set_1st();
+
+    JUDGE_PAT(adj_vref_start, __adj_vref_start);
+    one_chopldo_ip_v00();
+
+    SOCKET_INC(FRZ_OFF)
+    {
+        // vref_1v2_option[SOCKET] = one_chopldo_fir_option[SOCKET];
+        // printf("SOCKET[%2d]=%4d\n", SOCKET, vref_1v2_option[SOCKET]);
+    }
+
+
+    // write_Register
+
+    /*
+    SOCKET_INC(FRZ_OFF)
+    {
+        test_vref_option[SOCKET] = vref_1v2_option[SOCKET];
+        if(test_vref_option[SOCKET] <= 7 && test_vref_option[SOCKET] >= 0)
+        {
+            test_vref_option[SOCKET] = test_vref_option[SOCKET] + 8;
+        }
+        else if(test_vref_option[SOCKET] <= 15 && test_vref_option[SOCKET] >= 8)
+        {
+            test_vref_option[SOCKET] = test_vref_option[SOCKET] - 8;
+        }
+        else
+        {
+            test_vref_option[SOCKET] = -1;
+        }
+    }
+    */
+
+    SOCKET_INC(FRZ_ON)
+    {
+        // JUDGE_PAT(one_chopldo_adj_1st_P+324*vref_1v2_option[SOCKET], one_chopldo_adj_1st_P+324*vref_1v2_option[SOCKET]+323);
+    }
+
+    JUDGE_PAT(adj_vref_end, __adj_vref_end);
+
+    POWER_DOWN_FAIL_SITE(MODE_B);
+}

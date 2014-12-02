@@ -1,0 +1,625 @@
+two_ldo_adjust_ip_v04()
+{    
+  int ldoflag,start_op=0;
+  double regu_value[32],regu_value_old[32],regu_dif[32],regu_dif_old[32];
+  long start_add,stop_add;
+  
+  int *ldo_var_sub; 
+  int large_small=-1;    
+  int step_large;
+  int large_step;
+  int step_small;
+  int cycle_i;  
+  
+  char make_sure_fail='P';
+  char ldo_select='X';
+//---------------------------------------------------------------------------------------------------------------------
+  for(cycle_i=0;cycle_i<32;cycle_i++)
+  {
+     two_ldo_fir_option[cycle_i]=-1;
+     two_ldo_sec_option[cycle_i]=-1;
+     regu_value[cycle_i]=0;
+     regu_value_old[cycle_i]=0;    
+  }
+//--------------------------------------------------------------------------------------------------------------------- 
+  if(ldo_option_no==32||ldo_option_no==64)
+  {          
+     step_large=(ldo_option_no/8);
+     large_step=8;
+     step_small=ldo_option_no;
+     large_small=1;     
+  }
+  else if(ldo_option_no==16)
+  {
+     step_large=(ldo_option_no/4);
+     large_step=4;
+     step_small=ldo_option_no;
+     large_small=1;
+  }
+  else if(ldo_option_no==4||ldo_option_no==8)
+  {
+     step_large=-1;
+     large_step=-1;
+     step_small=ldo_option_no;
+     large_small=0;
+  }
+  else{make_sure_fail='A';}
+  
+  if(strcmp(which_one,"first")==0) ldo_select='F';
+  else if(strcmp(which_one,"second")==0) ldo_select='S';
+  else{make_sure_fail='B';} 
+  
+  if(((strcmp(verify_mass,"verify")==0)||(strcmp(verify_mass,"mass")==0))==0)
+     make_sure_fail='C';
+     
+  if(load_current>0.1A||load_current<-0.1A||pre_load_current>0.1A||pre_load_current<-0.1A)
+     make_sure_fail='D';
+     
+  if( ((strcmp(pdcl_rl_switch,"on")==0)||(strcmp(pdcl_rl_switch,"off")==0))==0 )
+     make_sure_fail='E';     
+     
+//-----------------------------------------------------------------------------------------------------------------
+  if(make_sure_fail=='P')
+  {
+    //===================Cu Tiao=========================================================================  
+     if((large_small==1)&&(strcmp(verify_mass,"mass")==0))
+     {
+        for(cycle_i=0;cycle_i<step_large;cycle_i++)
+        {
+           start_add=(cycle_i*large_step+large_step-1)*pat_interval; stop_add=start_add+pat_interval-1;
+           switch(ldo_select)
+           {
+              case 'F' :  JUDGE_PAT(two_ldo_adj_1st+start_add, two_ldo_adj_1st+stop_add  ); break; 
+              case 'S' :  JUDGE_PAT(two_ldo_adj_2nd+start_add, two_ldo_adj_2nd+stop_add  ); break;
+              default:    break;                 
+           }
+           
+           ldoflag=1;
+           
+           switch(ldo_select)
+           {
+              case 'F' : PARAL_INC(TWO_LDO_PIN_FIRST) 
+                         {
+                            RELAY_OFF(PIN_DEFS,PDCL,0mS);
+                            FORCE_I_PMU(PMU,0uA,@1uA,@6V,6V,OFF,0mS);        
+                            RELAY_ON(PIN_DEFS,PMU,1mS);
+                            
+                             if( (pre_load_current>=-0.000001A)&&(pre_load_current<=0.000001A) ) 
+                             {
+                                FORCE_I_PMU(PMU,pre_load_current,@1uA,   @6V,6V,ON,1mS);  
+                                WAIT(pre_wait_time);                 
+                             }
+                             else if( ((pre_load_current>=-0.00001A)&&(pre_load_current<-0.000001A))||((pre_load_current>0.000001A)&&(pre_load_current<=0.00001A)) )   
+                             {
+                                FORCE_I_PMU(PMU,pre_load_current,@10uA,   @6V,6V,ON,1mS);  
+                                WAIT(pre_wait_time);                 
+                             }
+                             else if( ((pre_load_current>=-0.0001A)&&(pre_load_current<-0.00001A))||((pre_load_current>0.00001A)&&(pre_load_current<=0.0001A)) )     
+                             {
+                                FORCE_I_PMU(PMU,pre_load_current,@100uA,   @6V,6V,ON,1mS);  
+                                WAIT(pre_wait_time);                 
+                             }
+                             else if( ((pre_load_current>=-0.001A)&&(pre_load_current<-0.0001A))||((pre_load_current>0.0001A)&&(pre_load_current<=0.001A)) )       
+                             { 
+                                FORCE_I_PMU(PMU,pre_load_current,@1mA,   @6V,6V,ON,1mS);  
+                                WAIT(pre_wait_time);                 
+                             }
+                             else if( ((pre_load_current>=-0.01A)&&(pre_load_current<-0.001A))||((pre_load_current>0.001A)&&(pre_load_current<=0.01A)) )         
+                             {
+                                FORCE_I_PMU(PMU,pre_load_current,@10mA,   @6V,6V,ON,1mS);  
+                                WAIT(pre_wait_time); 
+                             }
+                             else if( ((pre_load_current>=-0.1A)&&(pre_load_current<-0.01A))||((pre_load_current>0.01A)&&(pre_load_current<=0.1A)) )           
+                             { 
+                                FORCE_I_PMU(PMU,pre_load_current,@100mA,   @6V,6V,ON,1mS);  
+                                WAIT(pre_wait_time);
+                             }
+                                   
+                            
+                            if( (load_current>=-0.000001A)&&(load_current<=0.000001A) ) 
+                             {
+                                FORCE_I_PMU(PMU,load_current,@1uA,   @6V,6V,ON,1mS);
+                             }
+                             else if( ((load_current>=-0.00001A)&&(load_current<-0.000001A))||((load_current>0.000001A)&&(load_current<=0.00001A)) )   
+                             {              
+                                FORCE_I_PMU(PMU,load_current,@10uA,  @6V,6V,ON,1mS);
+                             }
+                             else if( ((load_current>=-0.0001A)&&(load_current<-0.00001A))||((load_current>0.00001A)&&(load_current<=0.0001A)) )     
+                             {               
+                                FORCE_I_PMU(PMU,load_current,@100uA, @6V,6V,ON,1mS);
+                             }
+                             else if( ((load_current>=-0.001A)&&(load_current<-0.0001A))||((load_current>0.0001A)&&(load_current<=0.001A)) )       
+                             {                 
+                                FORCE_I_PMU(PMU,load_current,@1mA,   @6V,6V,ON,1mS);
+                             }
+                             else if( ((load_current>=-0.01A)&&(load_current<-0.001A))||((load_current>0.001A)&&(load_current<=0.01A)) )         
+                             {              
+                                FORCE_I_PMU(PMU,load_current,@10mA,  @6V,6V,ON,1mS);
+                             }
+                             else if( ((load_current>=-0.1A)&&(load_current<-0.01A))||((load_current>0.01A)&&(load_current<=0.1A)) )           
+                             {                
+                                FORCE_I_PMU(PMU,load_current,@100mA, @6V,6V,ON,1mS);
+                             }
+                               
+                            WAIT(wait_time); 
+                                                                 
+                            MEAS_V_PMU(PMU,IFVM,1mS);
+                            SOCKET_INC(FRZ_OFF)
+                            {                                      
+                               regu_value[SOCKET]=RESULT_PIN(SOCKET,TWO_LDO_PIN_FIRST);
+                               if(regu_value[SOCKET]<ldo_target)ldoflag=0;
+                            }
+                            FORCE_I_PMU(PMU,0uA,@1uA,@6V,6V,OFF,0mS); 
+                            RELAY_OFF(PIN_DEFS,PMU,0mS); 
+                            if(strcmp(pdcl_rl_switch,"on")==0)
+                               RELAY_ON(PIN_DEFS,PDCL,1mS);
+                            else if(strcmp(pdcl_rl_switch,"off")==0)
+                               RELAY_OFF(PIN_DEFS,PDCL,1mS);
+                            else {;}
+                         }
+                         break;
+                        
+              case 'S' : PARAL_INC(TWO_LDO_PIN_SECOND) 
+                         {
+                            RELAY_OFF(PIN_DEFS,PDCL,0mS);
+                            FORCE_I_PMU(PMU,0uA,@1uA,@6V,6V,OFF,0mS);        
+                            RELAY_ON(PIN_DEFS,PMU,1mS);
+                                      
+                             if( (pre_load_current>=-0.000001A)&&(pre_load_current<=0.000001A) ) 
+                             {
+                                FORCE_I_PMU(PMU,pre_load_current,@1uA,   @6V,6V,ON,1mS);  
+                                WAIT(pre_wait_time);                 
+                             }
+                             else if( ((pre_load_current>=-0.00001A)&&(pre_load_current<-0.000001A))||((pre_load_current>0.000001A)&&(pre_load_current<=0.00001A)) )   
+                             {
+                                FORCE_I_PMU(PMU,pre_load_current,@10uA,   @6V,6V,ON,1mS);  
+                                WAIT(pre_wait_time);                 
+                             }
+                             else if( ((pre_load_current>=-0.0001A)&&(pre_load_current<-0.00001A))||((pre_load_current>0.00001A)&&(pre_load_current<=0.0001A)) )     
+                             {
+                                FORCE_I_PMU(PMU,pre_load_current,@100uA,   @6V,6V,ON,1mS);  
+                                WAIT(pre_wait_time);                 
+                             }
+                             else if( ((pre_load_current>=-0.001A)&&(pre_load_current<-0.0001A))||((pre_load_current>0.0001A)&&(pre_load_current<=0.001A)) )       
+                             { 
+                                FORCE_I_PMU(PMU,pre_load_current,@1mA,   @6V,6V,ON,1mS);  
+                                WAIT(pre_wait_time);                 
+                             }
+                             else if( ((pre_load_current>=-0.01A)&&(pre_load_current<-0.001A))||((pre_load_current>0.001A)&&(pre_load_current<=0.01A)) )         
+                             {
+                                FORCE_I_PMU(PMU,pre_load_current,@10mA,   @6V,6V,ON,1mS);  
+                                WAIT(pre_wait_time); 
+                             }
+                             else if( ((pre_load_current>=-0.1A)&&(pre_load_current<-0.01A))||((pre_load_current>0.01A)&&(pre_load_current<=0.1A)) )           
+                             { 
+                                FORCE_I_PMU(PMU,pre_load_current,@100mA,   @6V,6V,ON,1mS);  
+                                WAIT(pre_wait_time);
+                             }
+                                   
+                            
+                            if( (load_current>=-0.000001A)&&(load_current<=0.000001A) ) 
+                             {
+                                FORCE_I_PMU(PMU,load_current,@1uA,   @6V,6V,ON,1mS);
+                             }
+                             else if( ((load_current>=-0.00001A)&&(load_current<-0.000001A))||((load_current>0.000001A)&&(load_current<=0.00001A)) )   
+                             {              
+                                FORCE_I_PMU(PMU,load_current,@10uA,  @6V,6V,ON,1mS);
+                             }
+                             else if( ((load_current>=-0.0001A)&&(load_current<-0.00001A))||((load_current>0.00001A)&&(load_current<=0.0001A)) )     
+                             {               
+                                FORCE_I_PMU(PMU,load_current,@100uA, @6V,6V,ON,1mS);
+                             }
+                             else if( ((load_current>=-0.001A)&&(load_current<-0.0001A))||((load_current>0.0001A)&&(load_current<=0.001A)) )       
+                             {                 
+                                FORCE_I_PMU(PMU,load_current,@1mA,   @6V,6V,ON,1mS);
+                             }
+                             else if( ((load_current>=-0.01A)&&(load_current<-0.001A))||((load_current>0.001A)&&(load_current<=0.01A)) )         
+                             {              
+                                FORCE_I_PMU(PMU,load_current,@10mA,  @6V,6V,ON,1mS);
+                             }
+                             else if( ((load_current>=-0.1A)&&(load_current<-0.01A))||((load_current>0.01A)&&(load_current<=0.1A)) )           
+                             {                
+                                FORCE_I_PMU(PMU,load_current,@100mA, @6V,6V,ON,1mS);
+                             }
+                            
+                            WAIT(wait_time); 
+                                                                 
+                            MEAS_V_PMU(PMU,IFVM,1mS);
+                            SOCKET_INC(FRZ_OFF)
+                            {                                      
+                               regu_value[SOCKET]=RESULT_PIN(SOCKET,TWO_LDO_PIN_SECOND);
+                               if(regu_value[SOCKET]<ldo_target)ldoflag=0;
+                            }
+                            FORCE_I_PMU(PMU,0uA,@1uA,@6V,6V,OFF,0mS); 
+                            RELAY_OFF(PIN_DEFS,PMU,0mS); 
+                            if(strcmp(pdcl_rl_switch,"on")==0)
+                               RELAY_ON(PIN_DEFS,PDCL,1mS);
+                            else if(strcmp(pdcl_rl_switch,"off")==0)
+                               RELAY_OFF(PIN_DEFS,PDCL,1mS);
+                            else {;}
+                         }
+                         break;   
+                         
+              default  : break;
+           }      
+           
+           if(ldoflag==1){start_op=cycle_i*large_step+large_step-1;}
+           else {break;} 
+        }
+     }
+//===================Cu Tiao END=================================================================================== 
+  
+     printf("------------------------------------------------\n");
+     printf("---start_op=%d----------------------------------\n",start_op);
+     printf("------------------------------------------------\n"); 
+
+//====================Xi Tiao======================================================================================                        
+     for(cycle_i=start_op;cycle_i<step_small;cycle_i++)
+     {                          
+        start_add=cycle_i*pat_interval; stop_add=start_add+pat_interval-1; 
+        
+        switch(ldo_select)
+        {
+           case 'F' :  JUDGE_PAT(two_ldo_adj_1st+start_add, two_ldo_adj_1st+stop_add  ); break; 
+           case 'S' :  JUDGE_PAT(two_ldo_adj_2nd+start_add, two_ldo_adj_2nd+stop_add  ); break;
+           default:    break;                 
+        }             
+        
+        switch(ldo_select)
+        {
+           case 'F' :  PARAL_INC(TWO_LDO_PIN_FIRST) 
+                       {
+                          RELAY_OFF(PIN_DEFS,PDCL,0mS);
+                          FORCE_I_PMU(PMU,0uA,@1uA,@6V,6V,OFF,0mS);        
+                          RELAY_ON(PIN_DEFS,PMU,1mS);     
+                               
+                           if( (pre_load_current>=-0.000001A)&&(pre_load_current<=0.000001A) ) 
+                           {
+                              FORCE_I_PMU(PMU,pre_load_current,@1uA,   @6V,6V,ON,1mS);  
+                              WAIT(pre_wait_time);                 
+                           }
+                           else if( ((pre_load_current>=-0.00001A)&&(pre_load_current<-0.000001A))||((pre_load_current>0.000001A)&&(pre_load_current<=0.00001A)) )   
+                           {
+                              FORCE_I_PMU(PMU,pre_load_current,@10uA,   @6V,6V,ON,1mS);  
+                              WAIT(pre_wait_time);                 
+                           }
+                           else if( ((pre_load_current>=-0.0001A)&&(pre_load_current<-0.00001A))||((pre_load_current>0.00001A)&&(pre_load_current<=0.0001A)) )     
+                           {
+                              FORCE_I_PMU(PMU,pre_load_current,@100uA,   @6V,6V,ON,1mS);  
+                              WAIT(pre_wait_time);                 
+                           }
+                           else if( ((pre_load_current>=-0.001A)&&(pre_load_current<-0.0001A))||((pre_load_current>0.0001A)&&(pre_load_current<=0.001A)) )       
+                           { 
+                              FORCE_I_PMU(PMU,pre_load_current,@1mA,   @6V,6V,ON,1mS);  
+                              WAIT(pre_wait_time);                 
+                           }
+                           else if( ((pre_load_current>=-0.01A)&&(pre_load_current<-0.001A))||((pre_load_current>0.001A)&&(pre_load_current<=0.01A)) )         
+                           {
+                              FORCE_I_PMU(PMU,pre_load_current,@10mA,   @6V,6V,ON,1mS);  
+                              WAIT(pre_wait_time); 
+                           }
+                           else if( ((pre_load_current>=-0.1A)&&(pre_load_current<-0.01A))||((pre_load_current>0.01A)&&(pre_load_current<=0.1A)) )           
+                           { 
+                              FORCE_I_PMU(PMU,pre_load_current,@100mA,   @6V,6V,ON,1mS);  
+                              WAIT(pre_wait_time);
+                           }
+                                 
+                          
+                          if( (load_current>=-0.000001A)&&(load_current<=0.000001A) ) 
+                           {
+                              FORCE_I_PMU(PMU,load_current,@1uA,   @6V,6V,ON,1mS);
+                           }
+                           else if( ((load_current>=-0.00001A)&&(load_current<-0.000001A))||((load_current>0.000001A)&&(load_current<=0.00001A)) )   
+                           {              
+                              FORCE_I_PMU(PMU,load_current,@10uA,  @6V,6V,ON,1mS);
+                           }
+                           else if( ((load_current>=-0.0001A)&&(load_current<-0.00001A))||((load_current>0.00001A)&&(load_current<=0.0001A)) )     
+                           {               
+                              FORCE_I_PMU(PMU,load_current,@100uA, @6V,6V,ON,1mS);
+                           }
+                           else if( ((load_current>=-0.001A)&&(load_current<-0.0001A))||((load_current>0.0001A)&&(load_current<=0.001A)) )       
+                           {                 
+                              FORCE_I_PMU(PMU,load_current,@1mA,   @6V,6V,ON,1mS);
+                           }
+                           else if( ((load_current>=-0.01A)&&(load_current<-0.001A))||((load_current>0.001A)&&(load_current<=0.01A)) )         
+                           {              
+                              FORCE_I_PMU(PMU,load_current,@10mA,  @6V,6V,ON,1mS);
+                           }
+                           else if( ((load_current>=-0.1A)&&(load_current<-0.01A))||((load_current>0.01A)&&(load_current<=0.1A)) )           
+                           {                
+                              FORCE_I_PMU(PMU,load_current,@100mA, @6V,6V,ON,1mS);
+                           }
+                          
+                          WAIT(wait_time);
+                          if(strcmp(verify_mass,"verify")==0){JUDGE_V_PMU(PMU,IFVM,ldo_target*0.2,ldo_target*2,1mS); }
+                          MEAS_V_PMU(PMU,IFVM,1mS);
+                          SOCKET_INC(FRZ_OFF)
+                          {
+                             if(cycle_i==0) { regu_value_old[SOCKET]=RESULT_PIN(SOCKET,TWO_LDO_PIN_FIRST);}
+                             else {regu_value_old[SOCKET]=regu_value[SOCKET];}                  
+                             
+                             regu_value[SOCKET]=RESULT_PIN(SOCKET,TWO_LDO_PIN_FIRST);
+                             regu_dif_old[SOCKET]=fabs(regu_value_old[SOCKET]-ldo_target);
+                             regu_dif[SOCKET]=fabs(regu_value[SOCKET]-ldo_target); 
+                             if(strcmp(show_flag,"yes")==0)
+                             {
+                                printf("---cycle_i=%d,socket[%d],ldo_value_now=%f,ldo_value_old=%f---\n",cycle_i,SOCKET,regu_value[SOCKET],regu_value_old[SOCKET]);
+                             }                  
+                          }
+                          FORCE_I_PMU(PMU,0uA,@1uA,@6V,6V,OFF,0mS); 
+                          RELAY_OFF(PIN_DEFS,PMU,0mS);
+                          if(strcmp(pdcl_rl_switch,"on")==0)
+                             RELAY_ON(PIN_DEFS,PDCL,1mS);
+                          else if(strcmp(pdcl_rl_switch,"off")==0)
+                             RELAY_OFF(PIN_DEFS,PDCL,1mS);
+                          else {;}
+                       }     
+                       break;
+                       
+           case 'S' :  PARAL_INC(TWO_LDO_PIN_SECOND) 
+                       {
+                          RELAY_OFF(PIN_DEFS,PDCL,0mS);
+                          FORCE_I_PMU(PMU,0uA,@1uA,@6V,6V,OFF,0mS);        
+                          RELAY_ON(PIN_DEFS,PMU,1mS);   
+                                 
+                           if( (pre_load_current>=-0.000001A)&&(pre_load_current<=0.000001A) ) 
+                           {
+                              FORCE_I_PMU(PMU,pre_load_current,@1uA,   @6V,6V,ON,1mS);  
+                              WAIT(pre_wait_time);                 
+                           }
+                           else if( ((pre_load_current>=-0.00001A)&&(pre_load_current<-0.000001A))||((pre_load_current>0.000001A)&&(pre_load_current<=0.00001A)) )   
+                           {
+                              FORCE_I_PMU(PMU,pre_load_current,@10uA,   @6V,6V,ON,1mS);  
+                              WAIT(pre_wait_time);                 
+                           }
+                           else if( ((pre_load_current>=-0.0001A)&&(pre_load_current<-0.00001A))||((pre_load_current>0.00001A)&&(pre_load_current<=0.0001A)) )     
+                           {
+                              FORCE_I_PMU(PMU,pre_load_current,@100uA,   @6V,6V,ON,1mS);  
+                              WAIT(pre_wait_time);                 
+                           }
+                           else if( ((pre_load_current>=-0.001A)&&(pre_load_current<-0.0001A))||((pre_load_current>0.0001A)&&(pre_load_current<=0.001A)) )       
+                           { 
+                              FORCE_I_PMU(PMU,pre_load_current,@1mA,   @6V,6V,ON,1mS);  
+                              WAIT(pre_wait_time);                 
+                           }
+                           else if( ((pre_load_current>=-0.01A)&&(pre_load_current<-0.001A))||((pre_load_current>0.001A)&&(pre_load_current<=0.01A)) )         
+                           {
+                              FORCE_I_PMU(PMU,pre_load_current,@10mA,   @6V,6V,ON,1mS);  
+                              WAIT(pre_wait_time); 
+                           }
+                           else if( ((pre_load_current>=-0.1A)&&(pre_load_current<-0.01A))||((pre_load_current>0.01A)&&(pre_load_current<=0.1A)) )           
+                           { 
+                              FORCE_I_PMU(PMU,pre_load_current,@100mA,   @6V,6V,ON,1mS);  
+                              WAIT(pre_wait_time);
+                           }
+                                 
+                          
+                          if( (load_current>=-0.000001A)&&(load_current<=0.000001A) ) 
+                           {
+                              FORCE_I_PMU(PMU,load_current,@1uA,   @6V,6V,ON,1mS);
+                           }
+                           else if( ((load_current>=-0.00001A)&&(load_current<-0.000001A))||((load_current>0.000001A)&&(load_current<=0.00001A)) )   
+                           {              
+                              FORCE_I_PMU(PMU,load_current,@10uA,  @6V,6V,ON,1mS);
+                           }
+                           else if( ((load_current>=-0.0001A)&&(load_current<-0.00001A))||((load_current>0.00001A)&&(load_current<=0.0001A)) )     
+                           {               
+                              FORCE_I_PMU(PMU,load_current,@100uA, @6V,6V,ON,1mS);
+                           }
+                           else if( ((load_current>=-0.001A)&&(load_current<-0.0001A))||((load_current>0.0001A)&&(load_current<=0.001A)) )       
+                           {                 
+                              FORCE_I_PMU(PMU,load_current,@1mA,   @6V,6V,ON,1mS);
+                           }
+                           else if( ((load_current>=-0.01A)&&(load_current<-0.001A))||((load_current>0.001A)&&(load_current<=0.01A)) )         
+                           {              
+                              FORCE_I_PMU(PMU,load_current,@10mA,  @6V,6V,ON,1mS);
+                           }
+                           else if( ((load_current>=-0.1A)&&(load_current<-0.01A))||((load_current>0.01A)&&(load_current<=0.1A)) )           
+                           {                
+                              FORCE_I_PMU(PMU,load_current,@100mA, @6V,6V,ON,1mS);
+                           }
+                          
+                          WAIT(wait_time);
+                          if(strcmp(verify_mass,"verify")==0){JUDGE_V_PMU(PMU,IFVM,ldo_target*0.2,ldo_target*2,1mS); }
+                          MEAS_V_PMU(PMU,IFVM,1mS);
+                          SOCKET_INC(FRZ_OFF)
+                          {
+                             if(cycle_i==0) { regu_value_old[SOCKET]=RESULT_PIN(SOCKET,TWO_LDO_PIN_SECOND);}
+                             else {regu_value_old[SOCKET]=regu_value[SOCKET];}                  
+                             
+                             regu_value[SOCKET]=RESULT_PIN(SOCKET,TWO_LDO_PIN_SECOND);
+                             regu_dif_old[SOCKET]=fabs(regu_value_old[SOCKET]-ldo_target);
+                             regu_dif[SOCKET]=fabs(regu_value[SOCKET]-ldo_target);   
+                             if(strcmp(show_flag,"yes")==0)
+                             {
+                                printf("---cycle_i=%d,socket[%d],ldo_value_now=%f,ldo_value_old=%f---\n",cycle_i,SOCKET,regu_value[SOCKET],regu_value_old[SOCKET]);
+                             }               
+                          }
+                          FORCE_I_PMU(PMU,0uA,@1uA,@6V,6V,OFF,0mS); 
+                          RELAY_OFF(PIN_DEFS,PMU,0mS);
+                          if(strcmp(pdcl_rl_switch,"on")==0)
+                             RELAY_ON(PIN_DEFS,PDCL,1mS);
+                          else if(strcmp(pdcl_rl_switch,"off")==0)
+                             RELAY_OFF(PIN_DEFS,PDCL,1mS);
+                          else {;}
+                       }     
+                       break;
+           
+           default  :  break;
+        }
+      
+        SOCKET_INC(FRZ_OFF)
+        {               
+           switch(ldo_select)
+           {
+              case 'F' :   if((regu_value[SOCKET]<=ldo_target)&&(regu_value[SOCKET]>=ldo_target*(1-2*accurate_set))&&(two_ldo_fir_option[SOCKET]==-1))
+                           {
+                              if(regu_dif[SOCKET]<=regu_dif_old[SOCKET]) 
+                              {
+                                 two_ldo_fir_option[SOCKET]=cycle_i;
+                                 JUDGE_VARIABLE(SOCKET,regu_value[SOCKET],ldo_target*(1-accurate_set),ldo_target*(1+accurate_set),);
+                                 if(JUDGE_RESULT_MS[SOCKET]==PASS)
+                                 {
+                                    ldo_var_sub=&two_ldo_fir_option[SOCKET];               
+                                    two_ldo_fir_option[SOCKET]=two_ldo_real_op_1st(ldo_var_sub);
+                                 }
+                                 else{ two_ldo_fir_option[SOCKET]=-1; }
+                              }
+                              else
+                              {
+                                 two_ldo_fir_option[SOCKET]=cycle_i-1;         
+                                 JUDGE_VARIABLE(SOCKET,regu_value_old[SOCKET],ldo_target*(1-accurate_set),ldo_target*(1+accurate_set),);
+                                 if(JUDGE_RESULT_MS[SOCKET]==PASS)
+                                 {
+                                    ldo_var_sub=&two_ldo_fir_option[SOCKET];               
+                                    two_ldo_fir_option[SOCKET]=two_ldo_real_op_1st(ldo_var_sub);
+                                 }
+                                 else{ two_ldo_fir_option[SOCKET]=-1; }
+                              }
+                           }
+                           break;
+                           
+              case 'S' :   if((regu_value[SOCKET]<=ldo_target)&&(regu_value[SOCKET]>=ldo_target*(1-2*accurate_set))&&(two_ldo_sec_option[SOCKET]==-1))
+                           {
+                              if(regu_dif[SOCKET]<=regu_dif_old[SOCKET]) 
+                              {                                                                                                      
+                                 two_ldo_sec_option[SOCKET]=cycle_i;                                                                                
+                                 JUDGE_VARIABLE(SOCKET,regu_value[SOCKET],ldo_target*(1-accurate_set),ldo_target*(1+accurate_set),);
+                                 if(JUDGE_RESULT_MS[SOCKET]==PASS)
+                                 {
+                                    ldo_var_sub=&two_ldo_sec_option[SOCKET];               
+                                    two_ldo_sec_option[SOCKET]=two_ldo_real_op_2nd(ldo_var_sub);
+                                 }
+                                 else{ two_ldo_sec_option[SOCKET]=-1; }
+                              }
+                              else
+                              {
+                                 two_ldo_sec_option[SOCKET]=cycle_i-1;         
+                                 JUDGE_VARIABLE(SOCKET,regu_value_old[SOCKET],ldo_target*(1-accurate_set),ldo_target*(1+accurate_set),);
+                                 if(JUDGE_RESULT_MS[SOCKET]==PASS)
+                                 {
+                                    ldo_var_sub=&two_ldo_sec_option[SOCKET];               
+                                    two_ldo_sec_option[SOCKET]=two_ldo_real_op_2nd(ldo_var_sub);
+                                 }
+                                 else{ two_ldo_sec_option[SOCKET]=-1; }
+                              }
+                           }
+                           break; 
+                   
+              default  :   break;                                                              
+           }     
+           switch(ldo_select)
+           { 
+              case 'F' : if(strcmp(show_flag,"yes")==0)
+                         {                                                     
+                            printf("----ldo_dif_now=%f,rc_dif_old=%f---\n",regu_dif[SOCKET],regu_dif_old[SOCKET]);
+                            printf("socket[%d]two_ldo_fir_option=%d cycle_i=%d ldo_value_now=%f,ldo_value_old=%f\n",SOCKET,two_ldo_fir_option[SOCKET],cycle_i,regu_value[SOCKET],regu_value_old[SOCKET]);              
+                         }    
+                         break;
+                         
+              case 'S' : if(strcmp(show_flag,"yes")==0)
+                         {                                                     
+                            printf("----ldo_dif_now=%f,rc_dif_old=%f---\n",regu_dif[SOCKET],regu_dif_old[SOCKET]);
+                            printf("socket[%d]two_ldo_sec_option=%d cycle_i=%d ldo_value_now=%f,ldo_value_old=%f\n",SOCKET,two_ldo_sec_option[SOCKET],cycle_i,regu_value[SOCKET],regu_value_old[SOCKET]);              
+                         }    
+                         break;
+              default  : break;
+           }
+        }
+     
+//==================================================================================================================
+        if(strcmp(which_one,"first")==0)
+        {                       
+           if(strcmp(verify_mass,"mass")==0)
+           {
+              ldoflag=1; 
+              SOCKET_INC(FRZ_OFF)
+              {
+                 if(two_ldo_fir_option[SOCKET]==-1) ldoflag=0;               
+              }            
+              if(ldoflag==1) {break;}  
+           } 
+        }       
+        else if(strcmp(which_one,"second")==0)
+        {    
+           if(strcmp(verify_mass,"mass")==0)
+           {
+              ldoflag=1; 
+              SOCKET_INC(FRZ_OFF)
+              {
+                 if(two_ldo_sec_option[SOCKET]==-1) ldoflag=0;               
+              }            
+              if(ldoflag==1) {break;}  
+           }  
+        }
+        else{;}
+     }
+//====================Xi Tiao END==================================================================================          
+     SOCKET_INC(FRZ_OFF)                 
+     {                              
+        PLAN_RESULT_MS[SOCKET]=PASS;
+     }    
+     
+     SOCKET_INC(FRZ_OFF)
+     {  
+        switch(ldo_select)
+        {
+           case 'F' :   if(two_ldo_fir_option[SOCKET]==-1) 
+                        {
+                           if((regu_value[SOCKET]>=ldo_target)&&(regu_value[SOCKET]<((1+accurate_set)*ldo_target))) 
+                           {
+                              two_ldo_fir_option[SOCKET]=step_small-1;
+                              ldo_var_sub=&two_ldo_fir_option[SOCKET];               
+                              two_ldo_fir_option[SOCKET]=two_ldo_real_op_1st(ldo_var_sub);
+                              if( (two_ldo_fir_option[SOCKET]<0)||(two_ldo_fir_option[SOCKET]>=ldo_option_no) )
+                                 PLAN_RESULT_MS[SOCKET]=FAIL; 
+                           }
+                           else{ PLAN_RESULT_MS[SOCKET]=FAIL;}
+                        }
+                        if(strcmp(show_flag,"yes")==0)
+                        {
+                           printf("two_ldo_fir_option[s%d]=%d \n",SOCKET,two_ldo_fir_option[SOCKET]);
+                        }   
+                        break;
+                        
+           case 'S' :   if(two_ldo_sec_option[SOCKET]==-1) 
+                        {
+                           if((regu_value[SOCKET]>=ldo_target)&&(regu_value[SOCKET]<((1+accurate_set)*ldo_target))) 
+                           {
+                              two_ldo_sec_option[SOCKET]=step_small-1;
+                              ldo_var_sub=&two_ldo_sec_option[SOCKET];               
+                              two_ldo_sec_option[SOCKET]=two_ldo_real_op_2nd(ldo_var_sub);
+                              if( (two_ldo_sec_option[SOCKET]<0)||(two_ldo_sec_option[SOCKET]>=ldo_option_no) )
+                                 PLAN_RESULT_MS[SOCKET]=FAIL;                               
+                           }
+                           else{ PLAN_RESULT_MS[SOCKET]=FAIL;}
+                        }
+                        if(strcmp(show_flag,"yes")==0)
+                        {
+                           printf("two_ldo_sec_option[s%d]=%d \n",SOCKET,two_ldo_sec_option[SOCKET]);
+                        }   
+                        break;
+           default   :  break;   
+        }   
+     }
+
+  }  
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  else  
+  {
+     switch(make_sure_fail)
+     {
+        case 'A' : printf("===error! int-var ldo_option_no should be 4/8/16/32/64!===\n");break;
+        case 'B' : printf("===error! string-var which_one should be(first)or(second)!===\n");break;
+        case 'C' : printf("===error! string-var verify_mass should be(verify)or(mass)!===\n");break;
+        case 'D' : printf("===error! CURRENT-var load_current and pre_load_current should be less than 100ma!===\n");break;
+        case 'E' : printf("===error! string-var pdcl_rl_switch should be (on)or(off)!===\n");break;
+        default  : break;
+     }
+     SOCKET_INC(FRZ_OFF)
+     {
+        PLAN_RESULT_MS[SOCKET]=FAIL;  
+     }  
+  }
+
+}                            

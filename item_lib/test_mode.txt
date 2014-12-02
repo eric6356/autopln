@@ -1,0 +1,38 @@
+test_mode()
+{
+    SET_CBIT(RE_VDD+RE_VBAT+RE_AVDD+RE_VOUT+RE_VCC+RE_VREF,ON,0mS);
+
+    RELAY_ON(IO_PINS,PDCL,0mS);
+    FORCE_V_DPS(VDD+VBAT,3.3V,@8V,@100mA,100mA,NORM,ON,1mS);
+    LEVELS(fun_3v3_lvl,5mS);
+
+    PIN_MODE(IO_PINS,NRZ,EDGE,ENABLE,IO_NRZ,OFF);
+    PIN_MODE(P0_5,RZ,EDGE,ENABLE,IO_NRZ,OFF);
+    PIN_MODE(MASK_PINS,NRZ,EDGE,MASK,IO_NRZ,OFF);
+
+    // PIN_MODE(XTAL1,FCLK, EDGE,MASK,IO_ON,OFF);
+    // FRUN_CLK(XTAL1,30.52uS,0nS,15.26uS);
+    // FRUN_CLK_MODE(XTAL1, 1, 0, ON);
+    WAIT(5mS);
+
+
+    TEST_NO(1);
+
+    testmode_setting();
+
+    JUDGE_PAT(modef642b,__modef642b);
+
+    PIN_MODE(P0_5,RZ,EDGE,ENABLE,IO_NRZ,OFF);
+    // PIN_MODE(XTAL2,FCLK, EDGE,MASK,IO_ON,OFF);
+    // FRUN_CLK(XTAL2,30.52uS,0nS,15.26uS);
+
+    // FRUN_CLK_MODE (XTAL2 , 1 , 0 , ON );
+    JUDGE_PAT(bsd_mode_start,bsd_mode_start+729);
+    WAIT(5mS);
+    JUDGE_PAT(bsd_mode_start+730,bsd_mode_start+773);
+    WAIT(5mS);
+    JUDGE_PAT(bsd_mode_start+774,__bsd_mode_start);
+    // FRUN_CLK_MODE (XTAL2 , 1 , 0 , OFF );
+
+    POWER_DOWN_FAIL_SITE(MODE_B);
+}

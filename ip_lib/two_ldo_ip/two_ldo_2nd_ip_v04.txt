@@ -1,0 +1,84 @@
+two_ldo_2nd_ip_v04_test()
+{
+    TEST_NO(1);
+    strcpy(pdcl_rl_switch,"off");
+    strcpy(verify_mass, "mass");
+    strcpy(show_flag,"no");
+    strcpy(which_one,"second");
+    pat_interval=217;
+    pre_wait_time=0ms;
+    wait_time=1mS;
+    accurate_set=0.556;
+
+
+    ldo_target=1.417V;
+    ldo_option_no=32;
+    pre_load_current=0.0A;
+    load_current=0.0A;
+
+    //two_ldo_set_2nd();
+
+    // PIN_MODE(XTAL1,FCLK, EDGE,MASK,IO_ON,OFF);
+    // FRUN_CLK(XTAL1,30.52uS,0nS,15.26uS);
+    // FRUN_CLK_MODE (XTAL1 , 1 , 0 , ON );
+    WAIT(10mS);
+
+    JUDGE_PAT(adj_afebg_start,__adj_afebg_start);
+    two_ldo_adjust_ip_v04();
+
+    SOCKET_INC(FRZ_OFF)
+    {
+        // adc_vref_de_option[SOCKET]=two_ldo_sec_option[SOCKET];
+        // printf("SOCKET[%2d]=%4d\n",SOCKET, adc_vref_de_option[SOCKET]);
+    }
+
+    // FRUN_CLK_MODE (XTAL1 , 1 , 0 , ON );
+
+
+    // write_Register
+    /*
+    SOCKET_INC(FRZ_OFF)
+    {
+        test_adc_vref_option[SOCKET]=two_ldo_sec_option[SOCKET];
+        switch(test_adc_vref_option[SOCKET])
+        {
+            case 140: test_adc_vref_option[SOCKET]= 0;break;
+            case 205: test_adc_vref_option[SOCKET]= 1;break;
+            case 156: test_adc_vref_option[SOCKET]= 2;break;
+            case 106: test_adc_vref_option[SOCKET]= 3;break;
+            case 139: test_adc_vref_option[SOCKET]= 4;break;
+            case 122: test_adc_vref_option[SOCKET]= 5;break;
+            case 155: test_adc_vref_option[SOCKET]= 6;break;
+            case 138: test_adc_vref_option[SOCKET]= 7;break;
+            case 121: test_adc_vref_option[SOCKET]= 8;break;
+            case 104: test_adc_vref_option[SOCKET]= 9;break;
+            case 137: test_adc_vref_option[SOCKET]=10;break;
+            case 153: test_adc_vref_option[SOCKET]=11;break;
+            case 136: test_adc_vref_option[SOCKET]=12;break;
+            case 119: test_adc_vref_option[SOCKET]=13;break;
+            case 102: test_adc_vref_option[SOCKET]=14;break;
+            case 85 : test_adc_vref_option[SOCKET]=15;break;
+            case 68 : test_adc_vref_option[SOCKET]=16;break;
+            case 51 : test_adc_vref_option[SOCKET]=17;break;
+            case 34 : test_adc_vref_option[SOCKET]=18;break;
+            case 17 : test_adc_vref_option[SOCKET]=19;break;
+            case 33 : test_adc_vref_option[SOCKET]=20;break;
+            case 83 : test_adc_vref_option[SOCKET]=21;break;
+            case 99 : test_adc_vref_option[SOCKET]=22;break;
+            case 49 : test_adc_vref_option[SOCKET]=23;break;
+            case 65 : test_adc_vref_option[SOCKET]=24;break;
+            case 81 : test_adc_vref_option[SOCKET]=25;break;
+            case 97 : test_adc_vref_option[SOCKET]=26;break;
+            default:printf("wrong\n");
+        }
+    }
+    */
+    SOCKET_INC(FRZ_ON)
+    {
+        // JUDGE_PAT(two_ldo_adj_2nd+217*adc_vref_de_option[SOCKET],two_ldo_adj_2nd+217*adc_vref_de_option[SOCKET]+216);
+    }
+
+    JUDGE_PAT(adj_afebg_end,__adj_afebg_end);
+
+    POWER_DOWN_FAIL_SITE(MODE_B);
+}

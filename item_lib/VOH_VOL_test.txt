@@ -1,0 +1,154 @@
+VOH_VOL_test()
+{
+    //IO_PINS-JTAG_PINS 
+    //VOH/VOL1      
+    LEVELS(VOH_VOL_typical_vout1_normal_lvl,1mS);
+    PIN_MODE(IO_PINS-JTAG_PINS ,NRZ,EDGE,ENABLE,IO_NRZ,NORM);    //   //-XTAL1-XTAL2
+    TEST_NO(1);
+    JUDGE_PAT(dc_port_vohol,__dc_port_vohol);
+
+    /*==================================switch_to_shadow======================================*/            
+    LEVELS(fun_typical_lvl,5mS);
+    PIN_MODE(IO_PINS,NRZ,EDGE,ENABLE,IO_NRZ,OFF);
+    PIN_MODE(tck+SHADOW_tck,RZ,EDGE,ENABLE,IO_NRZ,OFF);
+    PIN_MODE(MASK_PINS,NRZ,EDGE,MASK,IO_NRZ,OFF);
+    TEST_NO(2);
+    JUDGE_PAT(switch_to_shadow,__switch_to_shadow);  
+    /*=======================================================================================*/ 
+    //JTAG_PINS 
+    LEVELS(VOH_VOL_typical_vout1_jtag_lvl,1mS);
+    PIN_MODE(JTAG_PINS,NRZ,EDGE,ENABLE,IO_NRZ,NORM);
+    PIN_MODE(SHADOW_tck,RZ,EDGE,ENABLE,IO_NRZ,OFF);   
+    TEST_NO(3);
+    JUDGE_PAT(dc_jtag_vohol,__dc_jtag_vohol);
+
+    /*==================================switch_back_jtag======================================*/            
+    PIN_MODE(tck+SHADOW_tck,RZ,EDGE,ENABLE,IO_NRZ,OFF);
+    TEST_NO(4);
+    JUDGE_PAT(switch_back_jtag,__switch_back_jtag);  
+    /*=======================================================================================*/ 
+
+
+    // if(debug_log_on)
+    // {
+    //     fun3v3_setting();       
+    //     //vol 
+    //     TEST_NO(5);
+    //     JUDGE_PAT(dc_port_out    ,dc_port_out+891);
+
+    //     PIN_INC(IO_PINS-JTAG_PINS)  ////-XTAL1-XTAL2
+    //     {
+    //         RELAY_OFF(PIN_DEF,ALL,1mS);
+    //         RELAY_ON(PIN_DEF,PMU,1mS);
+    //         FORCE_I_PMU(PMU, 8mA, @100mA, @6V, 6V, ON, 1mS);
+
+    //         JUDGE_V_PMU(PMU,IFVM, ,0.3V,2mS);
+
+    //         RELAY_OFF(PIN_DEF,PMU,1mS);
+    //         FORCE_V_PMU(PMU,0V,@6V,@1mA,1mA,OFF,1mS);
+    //         RELAY_ON(PIN_DEF,PDCL,2mS);
+    //     }
+
+
+
+    //     TEST_NO(6);
+    //     JUDGE_PAT(dc_port_out+892    ,dc_port_out+1090);
+
+    //     PIN_INC(IO_PINS-JTAG_PINS) //    //-XTAL1-XTAL2
+    //     {
+    //         RELAY_OFF(PIN_DEF,ALL,1mS);
+    //         RELAY_ON(PIN_DEF,PMU,1mS);
+    //         FORCE_I_PMU(PMU, -3mA, @100mA, @6V, 6V, ON, 1mS);
+
+    //         JUDGE_V_PMU(PMU,IFVM, 2.9V,  ,2mS);
+
+    //         RELAY_OFF(PIN_DEF,PMU,1mS);
+    //         FORCE_V_PMU(PMU,0V,@6V,@1mA,1mA,OFF,1mS);
+    //         RELAY_ON(PIN_DEF,PDCL,2mS);
+    //     }    
+
+
+
+    //     TEST_NO(7);
+    //     JUDGE_PAT(dc_port_out+1091    ,dc_port_out+1289);
+
+    //     PIN_INC(P2_0+P2_1+P2_2+P2_3+P2_4+P2_5+P2_6+P2_7+P3_0+P3_2+P3_3+P3_4+P3_5+P3_6)
+    //     {
+    //         RELAY_OFF(PIN_DEF,ALL,1mS);
+    //         RELAY_ON(PIN_DEF,PMU,1mS);
+    //         FORCE_I_PMU(PMU, 2mA, @100mA, @6V, 6V, ON, 1mS);
+
+    //         JUDGE_V_PMU(PMU,IFVM, 1.0V, 1.3V ,2mS);
+
+    //         RELAY_OFF(PIN_DEF,PMU,1mS);
+    //         FORCE_V_PMU(PMU,0V,@6V,@1mA,1mA,OFF,1mS);
+    //         RELAY_ON(PIN_DEF,PDCL,2mS);
+    //     }    
+
+    //     TEST_NO(8);
+    //     JUDGE_PAT(dc_port_out+1290    ,__dc_port_out);
+
+    //     ==================================switch_to_shadow======================================            
+    //     PIN_MODE(P0_5+P1_3,RZ,EDGE,ENABLE,IO_NRZ,OFF);
+
+    //     TEST_NO(9);
+    //     JUDGE_PAT(switch_to_shadow,__switch_to_shadow);  
+    //     /*=======================================================================================*/
+
+
+    //     PIN_MODE(JTAG_PINS,NRZ,EDGE,ENABLE,IO_NRZ,NORM);
+
+    //     PIN_MODE(P1_3,RZ,EDGE,ENABLE,IO_NRZ,OFF);   
+
+    //     TEST_NO(10);
+    //     JUDGE_PAT(dc_jtag_out    ,dc_jtag_out+161);
+
+    //     PIN_INC(JTAG_PINS)
+    //     {
+    //         RELAY_OFF(PIN_DEF,ALL,1mS);
+    //         RELAY_ON(PIN_DEF,PMU,1mS);
+    //         FORCE_I_PMU(PMU, 8mA, @100mA, @6V, 6V, ON, 1mS);
+
+    //         JUDGE_V_PMU(PMU,IFVM, ,0.3V,2mS);
+
+    //         RELAY_OFF(PIN_DEF,PMU,1mS);
+    //         FORCE_V_PMU(PMU,0V,@6V,@1mA,1mA,OFF,1mS);
+    //         RELAY_ON(PIN_DEF,PDCL,2mS);
+    //     }
+
+
+
+    //     TEST_NO(11);
+    //     JUDGE_PAT(dc_jtag_out+162    ,dc_jtag_out+224);
+
+    //     PIN_INC(JTAG_PINS)
+    //     {
+    //         RELAY_OFF(PIN_DEF,ALL,1mS);
+    //         RELAY_ON(PIN_DEF,PMU,1mS);
+    //         FORCE_I_PMU(PMU, -3mA, @100mA, @6V, 6V, ON, 1mS);
+
+    //         JUDGE_V_PMU(PMU,IFVM, 2.9V, ,2mS);
+
+    //         RELAY_OFF(PIN_DEF,PMU,1mS);
+    //         FORCE_V_PMU(PMU,0V,@6V,@1mA,1mA,OFF,1mS);
+    //         RELAY_ON(PIN_DEF,PDCL,2mS);
+    //     }
+
+    //     TEST_NO(12);
+    //     JUDGE_PAT(dc_jtag_out+225    ,__dc_jtag_out);
+
+    //     /*==================================switch_back_jtag======================================*/            
+    //     PIN_MODE(P0_5+P1_3,RZ,EDGE,ENABLE,IO_NRZ,OFF);
+    //     TEST_NO(13);
+    //     JUDGE_PAT(switch_back_jtag,__switch_back_jtag); 
+    //     /*=======================================================================================*/ 
+    // }
+
+    //set back to 3v3
+    LEVELS(fun_typical_lvl,5mS);
+    PIN_MODE(IO_PINS,NRZ,EDGE,ENABLE,IO_NRZ,OFF);
+    PIN_MODE(tck,RZ,EDGE,ENABLE,IO_NRZ,OFF);
+    PIN_MODE(MASK_PINS,NRZ,EDGE,MASK,IO_NRZ,OFF);
+
+    POWER_DOWN_FAIL_SITE(MODE_B); 
+}    

@@ -1,0 +1,78 @@
+/*  ====================================================================================
+================================Continuity() BLOCK==================================
+====================================================================================*/
+continuity()
+{
+    TEST_NO(1);
+    DATALOG_MSG="O/S negative-PMU";
+
+    // FORCE_V_DPS(all_Powers,0V,@8V,@100mA,100mA,NORM,ON,1mS);
+
+    SET_LEVELN(rst_lvl,EVEN_PIN+ODD_PIN,0V,0.5V,2V,4V,0uA,0uA,0V);
+    PIN_MODE(EVEN_PIN+ODD_PIN,F0,EDGE,MASK,IO_ON,OFF);
+    LEVELS(rst_lvl,1mS);
+
+    //==========EVEN_PIN os test==========//
+    RELAY_ON(ODD_PIN,PDCL,1mS);
+    RELAY_ON(EVEN_PIN,OST,1mS);
+
+    DATALOG_MSG ="EVEN Pin continuity";
+    JUDGE_OS(EVEN_PIN,-100uA,-1.0V,-0.2V,1mS);
+    RELAY_OFF(EVEN_PIN,OST,1mS);
+    RELAY_ON(EVEN_PIN,PDCL,1mS);
+
+    //==========ODD_PIN os test==========//
+    RELAY_OFF(ODD_PIN,PDCL,1mS);
+    RELAY_ON(ODD_PIN,OST,1mS);
+
+    DATALOG_MSG ="ODD Pin continuity";
+    JUDGE_OS(ODD_PIN,-100uA,-1.0V,-0.2V,1mS);
+    RELAY_OFF(ODD_PIN,OST,1mS);
+    RELAY_ON(ODD_PIN,PDCL,1mS);
+
+    SOCKET_INC(FRZ_OFF)
+    {
+        if(PLAN_RESULT_MS[SOCKET]==FAIL)
+        {
+            PLAN_RESULT_MS[SOCKET]=PASS;
+            os_test_by_PMU[SOCKET]=1;
+        }
+    }
+
+    SOCKET_INC(FRZ_OFF)
+    {
+        if(os_test_by_PMU[SOCKET])
+        {
+            PIN_INC(EVEN_PIN+ODD_PIN)
+            {
+                RELAY_OFF(PIN_DEF,PDCL,1mS);
+                RELAY_ON(PIN_DEF,PMU,1mS);
+                FORCE_I_PMU(PMU,-100uA,@1mA,@6V,2V,ON,1mS);
+                JUDGE_V_PMU(PMU,IFVM,-1.0V,-0.2V,1mS);
+                FORCE_I_PMU(PMU,0uA,@1mA,@6V,2V,OFF,1mS);
+                RELAY_OFF(PIN_DEF,PMU,1mS);
+                RELAY_ON(PIN_DEF,PDCL,1mS);
+            }
+        }
+    }
+    // FORCE_I_DPS(VDD,-100.000uA,@10mA,@8V,2V,NORM,ON,2mS);
+    // JUDGE_V_DPS(VDD,-1.0V,-0.2V,2mS) ;
+    // FORCE_V_DPS(VDD,0V,@8V,@100mA,100mA,NORM,ON,2mS);
+
+    // FORCE_I_DPS(AVDD,-100.000uA,@10mA,@8V,2V,NORM,ON,2mS);
+    // JUDGE_V_DPS(AVDD,-1.0V,-0.2V,2mS) ;
+    // FORCE_V_DPS(AVDD,0V,@8V,@100mA,100mA,NORM,ON,2mS);
+
+    // FORCE_I_DPS(VBAT,-100.000uA,@10mA,@8V,2V,NORM,ON,2mS);
+    // JUDGE_V_DPS(VBAT,-1.0V,-0.2V,2mS) ;
+    // FORCE_V_DPS(VBAT,0V,@8V,@100mA,100mA,NORM,ON,2mS);
+
+    /*================= mulit site=========================
+    // FORCE_I_PREF(PREF_name,-100.000uA,@100uA,@6V,2V,NORM,ON,2mS);
+    // JUDGE_V_PREF(PREF_name,IFVM,-1.0V,-0.2V,2mS) ;
+    // FORCE_V_PREF(PREF_name,0V,@6V,@100mA,100mA,NORM,ON,2mS);
+    ====================================================*/
+
+    power_down();
+    WAIT(10mS);
+}

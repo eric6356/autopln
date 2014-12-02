@@ -1,0 +1,52 @@
+two_ldo_1st_ip_v04_test()
+{
+    TEST_NO(1);
+    strcpy(pdcl_rl_switch,"off");
+    strcpy(verify_mass, "mass");
+    strcpy(show_flag,"no");
+    strcpy(which_one,"first");
+    pat_interval=216;
+    pre_wait_time=0ms;
+    wait_time=1mS;
+    accurate_set=0.556;
+
+    ldo_target=2.8V;
+    ldo_option_no=32;
+    pre_load_current=0.0A;
+    load_current=0.0A;
+
+    //two_ldo_set_1st();
+    JUDGE_PAT(adj_avdd_start,__adj_avdd_start);
+    two_ldo_adjust_ip_v04();
+    SOCKET_INC(FRZ_OFF)
+    {
+        // ldo2v8_option[SOCKET]=two_ldo_fir_option[SOCKET];
+        // printf("SOCKET[%2d]=%4d\n",SOCKET, ldo2v8_option [SOCKET]);
+    }
+
+    // write_Register
+    /*
+    SOCKET_INC(FRZ_OFF)
+    {
+        test_ldo_option[SOCKET]=ldo2v8_option[SOCKET];
+        if((test_ldo_option[SOCKET]>=0)&&(test_ldo_option[SOCKET]<=15))
+        {
+            test_ldo_option[SOCKET]=15-test_ldo_option[SOCKET];
+        }
+        else if((test_ldo_option[SOCKET]>=16)&&(test_ldo_option[SOCKET]<=31))
+        {
+            test_ldo_option[SOCKET]=47-test_ldo_option[SOCKET];
+        }
+        else
+        test_ldo_option[SOCKET]=-1;
+    }
+    */
+    SOCKET_INC(FRZ_ON)
+    {
+        // JUDGE_PAT(two_ldo_adj_1st+216*ldo2v8_option[SOCKET],two_ldo_adj_1st+215+216*ldo2v8_option[SOCKET]);
+    }
+
+    JUDGE_PAT(adj_avdd_end,__adj_avdd_end);
+
+    POWER_DOWN_FAIL_SITE(MODE_B);
+}
